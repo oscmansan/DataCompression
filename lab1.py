@@ -33,8 +33,8 @@ class Entropy:
             count[txt[i]] += 1
             pair_count[txt[i:i+2]] += 1
 
-        self.count = count
-        self.pair_count = pair_count
+        self.letters = list(count.keys())
+        self.pairs = list(pair_count.keys())
         self.probs = list(map(lambda x: float(x)/len(txt),count.values()))
         self.pair_probs = list(map(lambda x: float(x)/len(txt),pair_count.values()))
         self.cprobs = cond_probs(pair_count.items())
@@ -42,14 +42,14 @@ class Entropy:
     def random_text(self):
         res = ''
         for _ in range(len(self.txt)):
-            res += choices(list(d.keys()),self.probs)
+            res += choices(self.letters,self.probs)[0]
         return res
 
     def random_text_joint(self):
-        res = choices(list(self.count.keys()),self.probs) # first character
+        res = choices(self.letters,self.probs)[0] # first character
         for _ in range(len(self.txt)-1):
             p = self.cprobs[res[-1]]
-            res += choices(*p)
+            res += choices(*p)[0]
         return res
 
     def entropy(self):
@@ -72,7 +72,7 @@ class Entropy:
 
     def conditional_entropy(self):
         H = 0
-        for c,p in zip(self.count.keys(),self.probs):
+        for c,p in zip(self.letters,self.probs):
             H += p*self.conditional_entropy1(c)
         return H
 
@@ -101,8 +101,8 @@ def conditional_entropy(txt):
     return e.conditional_entropy()
 
 
-#print(random_text(strQ))
-#print(random_text_joint(strQ))
+print(random_text(strQ))
+print(random_text_joint(strQ))
 #print(random_text_joint('aaaab'))
 print(entropy(strQ))
 print(joint_entropy(strQ))
