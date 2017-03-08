@@ -101,10 +101,10 @@ def conditional_entropy(txt):
     return e.conditional_entropy()
 
 
-print(random_text(strQ))
-print(random_text_joint(strQ))
+#print(random_text(strQ))
+#print(random_text_joint(strQ))
 #print(random_text_joint('aaaab'))
-print(entropy(strQ))
-print(joint_entropy(strQ))
-print(conditional_entropy1(strQ,strQ[randrange(len(strQ))]))
-print(conditional_entropy(strQ))
+#print(entropy(strQ))
+#print(joint_entropy(strQ))
+#print(conditional_entropy1(strQ,strQ[randrange(len(strQ))]))
+#print(conditional_entropy(strQ))
