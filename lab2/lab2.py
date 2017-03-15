@@ -1,6 +1,7 @@
 #!/usr/bin/python3.6
 from collections import defaultdict
 from itertools import product
+from functools import reduce
 from math import log, ceil
 from string import ascii_lowercase
 from pprint import pprint, pformat
@@ -45,6 +46,11 @@ def entropy_source(src):
     return H
 
 
+def mean_length(probs,C):
+    L = map(lambda x: len(x[1]),C)
+    return reduce(lambda x,y: x+y[0]*y[1], zip(probs,L), 0)
+
+
 def shannon_code(src):
     src = to_probabilities(src)
     src = sorted(src, key=lambda x: x[1], reverse=True)
@@ -67,7 +73,7 @@ def shannon_code(src):
                 aux.append(x+'1')
             q = aux
 
-    return C
+    return C, mean_length(probs,C)
 
 
 def balanced_division(src):
@@ -96,9 +102,13 @@ def shannon_fano_code(src):
     src = to_probabilities(src)
     src = sorted(src, key=lambda x: x[1], reverse=True)
 
-    return shannon_fano_code1(src,'')
+    probs = map(lambda x:x[1],src)
+    C = shannon_fano_code1(src,'')
+
+    return C, mean_length(probs,C)
 
 
+'''
 with open('../data/moby_dick.txt') as f:
     txt = f.read()
     txt = filter(lambda c: c in ascii_lowercase+' ',txt.lower())
@@ -109,3 +119,9 @@ with open('../data/moby_dick.txt') as f:
     #print('C = ' + pformat(shannon_code(src)))
     #pprint(shannon_fano_code(src))
     pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
+'''
+
+src = [('0',0.9),('1',0.1)]
+src_ext = source_extension(src,2)
+pprint(shannon_code(src_ext))
+pprint(shannon_fano_code(src_ext))
