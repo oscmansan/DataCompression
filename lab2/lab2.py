@@ -70,6 +70,35 @@ def shannon_code(src):
     return C
 
 
+def balanced_division(src):
+    A = []
+    B = list(src)
+    diff = -sum(map(lambda x:x[1],src)) # diff = sum(A)-sum(B)
+    while abs(diff+2*B[0][1]) < abs(diff):
+        x = B.pop(0)
+        A.append(x)
+        diff += 2*x[1] # diff = (sum(A)+x)-(sum(B)-x) = diff + 2*x
+
+    return A,B
+
+def shannon_fano_code1(src,x):
+    if len(src)==1:
+        return [(src[0][0],x)]
+    else:
+        A,B = balanced_division(src)
+
+        CA = shannon_fano_code1(A,x+'0')
+        CB = shannon_fano_code1(B,x+'1')
+
+        return CA + CB
+
+def shannon_fano_code(src):
+    src = to_probabilities(src)
+    src = sorted(src, key=lambda x: x[1], reverse=True)
+
+    return shannon_fano_code1(src,'')
+
+
 with open('../data/moby_dick.txt') as f:
     txt = f.read()
     txt = filter(lambda c: c in ascii_lowercase+' ',txt.lower())
@@ -77,4 +106,6 @@ with open('../data/moby_dick.txt') as f:
     #pprint(sorted(src,key=lambda x:x[1],reverse=True))
     #pprint(sorted(source_extension(src, 2),key=lambda x:x[1],reverse=True))
     print('H = ' + str(entropy_source(src)))
-    print('C = ' + pformat(shannon_code(src)))
+    #print('C = ' + pformat(shannon_code(src)))
+    #pprint(shannon_fano_code(src))
+    pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
