@@ -5,6 +5,7 @@ from functools import reduce
 from math import log, ceil
 from string import ascii_lowercase
 from pprint import pprint, pformat
+from queue import PriorityQueue
 
 
 def to_probabilities(src):
@@ -79,7 +80,7 @@ def shannon_code(src):
 def balanced_division(src):
     A = []
     B = list(src)
-    diff = -sum(map(lambda x:x[1],src)) # diff = sum(A)-sum(B)
+    diff = -reduce(lambda x,y: x+y[1], src, 0) # diff = sum(A)-sum(B)
     while abs(diff+2*B[0][1]) < abs(diff):
         x = B.pop(0)
         A.append(x)
@@ -108,6 +109,21 @@ def shannon_fano_code(src):
     return C, mean_length(probs,C)
 
 
+def huffman_code(src):
+    src = to_probabilities(src)
+    src = sorted(src, key=lambda x: x[1])
+
+    q = PriorityQueue()
+    for p in map(lambda x:x[::-1],src):
+        q.put(p)
+
+    while q.qsize()>1:
+        x = q.get()
+        y = q.get()
+        q.put((x[0]+y[0],[x[1],y[1]]))
+    print(q.get())
+
+
 '''
 with open('../data/moby_dick.txt') as f:
     txt = f.read()
@@ -125,3 +141,4 @@ src = [('0',0.9),('1',0.1)]
 src_ext = source_extension(src,2)
 pprint(shannon_code(src_ext))
 pprint(shannon_fano_code(src_ext))
+huffman_code(src_ext)
