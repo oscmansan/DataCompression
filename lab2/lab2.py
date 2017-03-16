@@ -109,19 +109,34 @@ def shannon_fano_code(src):
     return C, mean_length(probs,C)
 
 
+def build_code(tree,x):
+    if len(tree)==1:
+        return [(tree[0],x)]
+    else:
+        CA = build_code(tree[0],x+'0')
+        CB = build_code(tree[1],x+'1')
+        return CA+CB
+
 def huffman_code(src):
     src = to_probabilities(src)
     src = sorted(src, key=lambda x: x[1])
 
     q = PriorityQueue()
-    for p in map(lambda x:x[::-1],src):
+    for p in map(lambda x: ([x[1]],[x[0]]), src):
         q.put(p)
 
     while q.qsize()>1:
         x = q.get()
         y = q.get()
         q.put((x[0]+y[0],[x[1],y[1]]))
-    print(q.get())
+    qq = q.get()
+
+    probs = qq[0]
+    tree = qq[1]
+    
+    C = build_code(tree,'')
+
+    return C, mean_length(probs,C)
 
 
 '''
@@ -134,11 +149,13 @@ with open('../data/moby_dick.txt') as f:
     print('H = ' + str(entropy_source(src)))
     #print('C = ' + pformat(shannon_code(src)))
     #pprint(shannon_fano_code(src))
-    pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
+    #pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
+    pprint(huffman_code(src))
 '''
+
 
 src = [('0',0.9),('1',0.1)]
 src_ext = source_extension(src,2)
 pprint(shannon_code(src_ext))
 pprint(shannon_fano_code(src_ext))
-huffman_code(src_ext)
+pprint(huffman_code(src_ext))
