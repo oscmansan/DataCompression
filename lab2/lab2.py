@@ -47,7 +47,7 @@ def entropy_source(src):
     return H
 
 
-def mean_length(probs,C):
+def mean_length(C,probs):
     L = map(lambda x: len(x[1]),C)
     return reduce(lambda x,y: x+y[0]*y[1], zip(probs,L), 0)
 
@@ -74,7 +74,7 @@ def shannon_code(src):
                 aux.append(x+'1')
             q = aux
 
-    return C, mean_length(probs,C)
+    return C, mean_length(C,probs)
 
 
 def balanced_division(src):
@@ -103,10 +103,10 @@ def shannon_fano_code(src):
     src = to_probabilities(src)
     src = sorted(src, key=lambda x: x[1], reverse=True)
 
-    probs = map(lambda x:x[1],src)
     C = shannon_fano_code1(src,'')
+    probs = map(lambda x:x[1],src)
 
-    return C, mean_length(probs,C)
+    return C, mean_length(C,probs)
 
 
 def build_code(tree,x):
@@ -122,21 +122,23 @@ def huffman_code(src):
     src = sorted(src, key=lambda x: x[1])
 
     q = PriorityQueue()
-    for p in map(lambda x: ([x[1]],[x[0]]), src):
+    for p in map(lambda x: (x[1],[x[0]]), src):
         q.put(p)
 
     while q.qsize()>1:
         x = q.get()
         y = q.get()
         q.put((x[0]+y[0],[x[1],y[1]]))
-    qq = q.get()
+    tree = q.get()[1]
 
-    probs = qq[0]
-    tree = qq[1]
-    
     C = build_code(tree,'')
 
-    return C, mean_length(probs,C)
+    probs = []
+    src = dict(src)
+    for x in map(lambda x: x[0], C):
+        probs.append(src[x])
+
+    return C, mean_length(C,probs)
 
 
 '''
@@ -152,7 +154,6 @@ with open('../data/moby_dick.txt') as f:
     #pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
     pprint(huffman_code(src))
 '''
-
 
 src = [('0',0.9),('1',0.1)]
 src_ext = source_extension(src,2)
