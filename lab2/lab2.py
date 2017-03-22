@@ -5,7 +5,7 @@ from functools import reduce
 from math import log, ceil
 from string import ascii_lowercase
 from pprint import pprint, pformat
-from queue import PriorityQueue
+import heapq
 
 
 def to_probabilities(src):
@@ -117,19 +117,30 @@ def build_code(tree,x):
         CB = build_code(tree[1],x+'1')
         return CA+CB
 
+
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+    def __lt__(self, other):
+        if self.key == other.key:
+            return True
+        else:
+            return self.key < other.key
+
 def huffman_code(src):
     src = to_probabilities(src)
     src = sorted(src, key=lambda x: x[1])
 
-    q = PriorityQueue()
-    for p in map(lambda x: (x[1],[x[0]]), src):
-        q.put(p)
+    q = list(map(lambda x: Node(x[1],[x[0]]), src))
+    heapq.heapify(q)
 
-    while q.qsize()>1:
-        x = q.get()
-        y = q.get()
-        q.put((x[0]+y[0],[x[1],y[1]]))
-    tree = q.get()[1]
+    while len(q) > 1:
+        x = heapq.heappop(q)
+        y = heapq.heappop(q)
+        heapq.heappush(q, Node(x.key+y.key,[x.value,y.value]))
+    tree = heapq.heappop(q).value
 
     C = build_code(tree,'')
 
@@ -155,8 +166,9 @@ with open('../data/moby_dick.txt') as f:
     pprint(huffman_code(src))
 '''
 
-src = [('0',0.9),('1',0.1)]
-src_ext = source_extension(src,2)
-pprint(shannon_code(src_ext))
-pprint(shannon_fano_code(src_ext))
-pprint(huffman_code(src_ext))
+#src = [('0',0.9),('1',0.1)]
+#src = source_extension(src,2)
+src = source('setzejutgesdunjutjatmengenfetgedunpenjat')
+pprint(shannon_code(src))
+pprint(shannon_fano_code(src))
+pprint(huffman_code(src))
