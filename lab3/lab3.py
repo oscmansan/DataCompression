@@ -22,11 +22,9 @@ def binary(x, k):
 
 
 def arithmetic_encode(str, src, k):
-    l = sum(map(lambda x: x[1], src))
-    letters = {}
-    for i, a in enumerate(map(lambda x: x[0], src)):
-        letters[a] = i
-    count = list(map(lambda x: x[1], src))
+    letters = dict([(x[0], i) for i, x in enumerate(src)])
+    count = [x[1] for x in src]
+    w = sum(count)
     cumcount = cumsum(count)
 
     a = 0
@@ -38,12 +36,12 @@ def arithmetic_encode(str, src, k):
     for x in str:
         # update to the next subinterval
         i = letters[x]
-        _a = a + d * cumcount[i] // l
-        _b = a + d * cumcount[i + 1] // l - 1
+        _a = a + d * cumcount[i] // w
+        _b = a + d * cumcount[i + 1] // w - 1
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        print(x, _a, _b)
+        print(x, _a, _b, c)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -68,12 +66,11 @@ def arithmetic_encode(str, src, k):
     return c + '1'
 
 
-def arithmetic_decode(c,src,k,L):
+def arithmetic_decode(c, src, k, l):
     n = len(src)
-    count = list(map(lambda x: x[1], src))
+    letters, count = map(list, zip(*src))
+    w = sum(count)
     cumcount = cumsum(count)
-    l = sum(count)
-    letters = list(map(lambda x: x[0], src))
 
     a = 0
     b = 2 ** k - 1
@@ -82,21 +79,21 @@ def arithmetic_decode(c,src,k,L):
     g = c[:k]
     c = c[k:]
 
-    str = ''
-    for _ in range(L):
-        _g = int(g, 2)
-
+    x = ''
+    for _ in range(l):
         # find next letter
+        _a = a
+        _b = b
         for i in range(n):
-            _a = a + d * cumcount[i] // l
-            _b = a + d * cumcount[i + 1] // l - 1
-            if _a <= _g <= _b:
-                str += letters[i]
+            _a = a + d * cumcount[i] // w
+            _b = a + d * cumcount[i + 1] // w - 1
+            if _a <= int(g, 2) <= _b:
+                x += letters[i]
                 break
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        print(_a, _b, g, str)
+        print(_a, _b, g, x)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -116,7 +113,7 @@ def arithmetic_decode(c,src,k,L):
         b = int(_b, 2)
         d = b - a + 1
 
-    return str
+    return x
 
 
 txt = '1010000000'
@@ -124,5 +121,5 @@ src = [('0', 9), ('1', 1)]
 k = 6
 c = arithmetic_encode(txt, src, k)
 print(c)
-txt = arithmetic_decode(c,src,k,len(txt))
+txt = arithmetic_decode(c, src, k, len(txt))
 print(txt)
