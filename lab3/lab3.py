@@ -1,5 +1,6 @@
 #!/usr/bin/python3.6
 from collections import defaultdict
+from math import log, ceil
 
 
 def source(str):
@@ -116,9 +117,19 @@ def arithmetic_decode(c, src, k, l):
     return x
 
 
+'''
 txt = '1010000000'
 src = [('0', 9), ('1', 1)]
 k = 6
+'''
+
+txt = 'setzejutgesdunjutjatmengenfetgedunpenjat'
+src = source(txt)
+counts = [x[1] for x in src]
+probs = [x / sum(counts) for x in counts]
+p = min(probs)
+k = ceil(-log(p, 2) + 2)
+
 c = arithmetic_encode(txt, src, k)
 print(c)
 txt = arithmetic_decode(c, src, k, len(txt))
