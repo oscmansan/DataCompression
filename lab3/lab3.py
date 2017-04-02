@@ -1,6 +1,7 @@
 #!/usr/bin/python3.6
 from collections import defaultdict
 from math import log, ceil
+from functools import reduce
 
 
 def source(str):
@@ -42,7 +43,7 @@ def arithmetic_encode(str, src, k):
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        print(x, _a, _b, c)
+        #print(x, _a, _b, c)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -94,7 +95,7 @@ def arithmetic_decode(c, src, k, l):
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        print(_a, _b, g, x)
+        #print(_a, _b, g, x)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -125,12 +126,21 @@ k = 6
 
 txt = 'setzejutgesdunjutjatmengenfetgedunpenjat'
 src = source(txt)
-counts = [x[1] for x in src]
-probs = [x / sum(counts) for x in counts]
+letters, count = map(list, zip(*src))
+probs = [x / sum(count) for x in count]
 p = min(probs)
 k = ceil(-log(p, 2) + 2)
 
 c = arithmetic_encode(txt, src, k)
 print(c)
-txt = arithmetic_decode(c, src, k, len(txt))
+
+d = dict(zip(letters, probs))
+pr = reduce(lambda x, y: x*d[y], txt, 1)
+expected_length = -log(pr, 2)
+actual_length = len(c)
+assert(actual_length <= expected_length)
+
+dec = arithmetic_decode(c, src, k, len(txt))
 print(txt)
+
+assert(dec == txt)
