@@ -1,7 +1,7 @@
 #!/usr/bin/python3.6
 from collections import defaultdict
-from math import log, ceil
 from functools import reduce
+from math import log, ceil
 
 
 def source(str):
@@ -43,7 +43,7 @@ def arithmetic_encode(str, src, k):
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        #print(x, _a, _b, c)
+        # print(x, _a, _b, c)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -95,7 +95,7 @@ def arithmetic_decode(c, src, k, l):
 
         _a = binary(_a, k)
         _b = binary(_b, k)
-        #print(_a, _b, g, x)
+        # print(_a, _b, g, x)
 
         # rescaling
         while _a[0] == _b[0]:
@@ -135,12 +135,12 @@ c = arithmetic_encode(txt, src, k)
 print(c)
 
 d = dict(zip(letters, probs))
-pr = reduce(lambda x, y: x*d[y], txt, 1)
+pr = reduce(lambda x, y: x * d[y], txt, 1)
 expected_length = -log(pr, 2)
 actual_length = len(c)
-assert(actual_length <= expected_length)
+assert (actual_length <= expected_length)
 
 dec = arithmetic_decode(c, src, k, len(txt))
-print(txt)
+print(dec)
 
-assert(dec == txt)
+assert (dec == txt)
