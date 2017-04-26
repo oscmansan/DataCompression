@@ -1,17 +1,17 @@
 #!/usr/bin/python3.6
-from collections import defaultdict
-from itertools import product
-from functools import reduce
-from math import log, ceil
-from string import ascii_lowercase
-from pprint import pprint, pformat
 import heapq
+from collections import defaultdict
+from functools import reduce
+from itertools import product
+from math import log, ceil
+from pprint import pprint
+from string import ascii_lowercase
 
 
 def to_probabilities(src):
     letters, count = zip(*src)
     probs = list(map(lambda x: float(x) / sum(count), count))
-    return zip(letters, probs)
+    return list(zip(letters, probs))
 
 
 def source(str):
@@ -158,14 +158,14 @@ def huffman_code(src):
 '''
 with open('../data/moby_dick.txt') as f:
     txt = f.read()
-    txt = filter(lambda c: c in ascii_lowercase+' ',txt.lower())
+    txt = list(filter(lambda c: c in ascii_lowercase + ' ', txt.lower()))
     src = source(txt)
-    #pprint(sorted(src,key=lambda x:x[1],reverse=True))
-    #pprint(sorted(source_extension(src, 2),key=lambda x:x[1],reverse=True))
+    # pprint(sorted(src,key=lambda x:x[1],reverse=True))
+    # pprint(sorted(source_extension(src, 2),key=lambda x:x[1],reverse=True))
     print('H = ' + str(entropy_source(src)))
-    #print('C = ' + pformat(shannon_code(src)))
-    #pprint(shannon_fano_code(src))
-    #pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
+    # print('C = ' + pformat(shannon_code(src)))
+    # pprint(shannon_fano_code(src))
+    # pprint(shannon_fano_code([('a1',0.36),('a2',0.18),('a3',0.18),('a4',0.12),('a5',0.09),('a6',0.07)]))
     pprint(huffman_code(src))
 '''
 

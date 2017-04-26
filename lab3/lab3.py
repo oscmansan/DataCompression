@@ -1,12 +1,16 @@
 #!/usr/bin/python3.6
-from collections import defaultdict
+from collections import OrderedDict
+from decimal import Decimal, Context
 from functools import reduce
 from math import log, ceil
+from random import randrange
 
 
 def source(str):
-    d = defaultdict(lambda: 0)
+    d = OrderedDict()
     for c in str:
+        if c not in d:
+            d[c] = 0
         d[c] += 1
     return list(d.items())
 
@@ -38,11 +42,11 @@ def arithmetic_encode(str, src, k):
     for x in str:
         # update to the next subinterval
         i = letters[x]
-        _a = a + d * cumcount[i] // w
-        _b = a + d * cumcount[i + 1] // w - 1
+        b = a + d * cumcount[i + 1] // w - 1
+        a = a + d * cumcount[i] // w
 
-        _a = binary(_a, k)
-        _b = binary(_b, k)
+        _a = binary(a, k)
+        _b = binary(b, k)
         # print(x, _a, _b, c)
 
         # rescaling
@@ -118,29 +122,29 @@ def arithmetic_decode(c, src, k, l):
     return x
 
 
-'''
-txt = '1010000000'
-src = [('0', 9), ('1', 1)]
-k = 6
-'''
-
-txt = 'setzejutgesdunjutjatmengenfetgedunpenjat'
+txt = open('../data/don_quixote.txt', 'r').read()
 src = source(txt)
 letters, count = map(list, zip(*src))
 probs = [x / sum(count) for x in count]
 p = min(probs)
 k = ceil(-log(p, 2) + 2)
 
-c = arithmetic_encode(txt, src, k)
-print(c)
+l = 1000
+for _ in range(1000):
+    i = min(randrange(len(txt)), len(txt)-l)
+    str = txt[i:i+l]
 
-d = dict(zip(letters, probs))
-pr = reduce(lambda x, y: x * d[y], txt, 1)
-expected_length = -log(pr, 2)
-actual_length = len(c)
-assert (actual_length <= expected_length)
+    c = arithmetic_encode(str, src, k)
+    print(c)
 
-dec = arithmetic_decode(c, src, k, len(txt))
-print(dec)
+    ctx = Context()
+    d = dict(zip(letters, probs))
+    pr = reduce(lambda x, y: ctx.multiply(x, Decimal(d[y])), str, Decimal(1))
+    expected_length = ceil(-ctx.divide(pr.ln(ctx), Decimal(2).ln(ctx))) + 1
+    actual_length = len(c)
+    assert (actual_length <= expected_length)
 
-assert (dec == txt)
+    dec = arithmetic_decode(c, src, k, len(str))
+    print(dec)
+
+    assert (dec == str)
