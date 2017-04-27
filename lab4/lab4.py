@@ -39,16 +39,55 @@ def LZ77_decode(tok):
     return txt
 
 
+def LZSS_encode(txt,s,t,m):
+    tok = []
+    i = 0
+    while i < len(txt):
+        r = max(0, i - s)
+        u = min(len(txt), i + t)
+
+        th = 0
+        for j in reversed(range(i, u)):
+            k = r + txt[r:u].find(txt[i:j+1])
+            if j > i and k in range(r, i):
+                th = i - k
+                break
+        a = txt[i]
+        l = j - i + 1
+        if l < m:
+            tok.append((False, a))
+            i += 1
+        else:
+            tok.append((True, th, l))
+            i += l
+
+    return tok
+
+
+def LZSS_decode(tok):
+    txt = ''
+    for t in tok:
+        if t[0]:
+            th = t[1]
+            l = t[2]
+            for i in range(len(txt) - th, len(txt) - th + l):
+                txt += txt[i]
+        else:
+            txt += t[1]
+
+    return txt
+
+
 txt = open('../data/don_quijote.txt', 'r').read()
 l = 1000
 for _ in range(1000):
     i = min(randrange(len(txt)), len(txt) - l)
     str = txt[i:i + l]
 
-    tok = LZ77_encode(str, 4095, 16)
+    tok = LZSS_encode(str, 4095, 16, 3)
     print(tok)
 
-    dec = LZ77_decode(tok)
+    dec = LZSS_decode(tok)
     print(dec)
 
     assert (dec == str)
