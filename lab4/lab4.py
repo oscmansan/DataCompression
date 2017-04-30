@@ -47,13 +47,13 @@ def LZSS_encode(txt,s,t,m):
         u = min(len(txt), i + t)
 
         th = 0
-        for j in reversed(range(i, u)):
-            k = r + txt[r:u].find(txt[i:j+1])
+        for j in reversed(range(i, u+1)):
+            k = r + txt[r:u].find(txt[i:j])
             if j > i and k in range(r, i):
                 th = i - k
                 break
         a = txt[i]
-        l = j - i + 1
+        l = j - i
         if l < m:
             tok.append((False, a))
             i += 1
@@ -78,16 +78,47 @@ def LZSS_decode(tok):
     return txt
 
 
+def LZ78_encode(txt):
+    tok =  []
+    d = ['']
+
+    while txt:
+        l = 0
+        for w in sorted(d, key=lambda x: len(x), reverse=True):
+            if txt.startswith(w):
+                l = len(w)
+                i = d.index(w)
+                a = txt[l] if l < len(txt) else ''
+                tok.append((i, a))
+                break
+        d.append(txt[:l+1])
+        txt = txt[l+1:]
+
+    return tok
+
+
+def LZ78_decode(tok):
+    txt = ''
+    d = ['']
+
+    for t in tok:
+        w = d[t[0]] + t[1]
+        txt += w
+        d.append(w)
+
+    return txt
+
+
 txt = open('../data/don_quijote.txt', 'r').read()
 l = 1000
 for _ in range(1000):
     i = min(randrange(len(txt)), len(txt) - l)
     str = txt[i:i + l]
 
-    tok = LZSS_encode(str, 4095, 16, 3)
+    tok = LZ78_encode(str)
     print(tok)
 
-    dec = LZSS_decode(tok)
+    dec = LZ78_decode(tok)
     print(dec)
 
     assert (dec == str)
