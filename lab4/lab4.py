@@ -84,13 +84,14 @@ def LZ78_encode(txt):
 
     while txt:
         l = 0
-        for w in sorted(d, key=lambda x: len(x), reverse=True):
-            if txt.startswith(w):
+        i = 0
+        for j in range(len(d)):
+            w = d[j]
+            if txt.startswith(w) and len(w) > l:
                 l = len(w)
-                i = d.index(w)
-                a = txt[l] if l < len(txt) else ''
-                tok.append((i, a))
-                break
+                i = j
+        a = txt[l] if l < len(txt) else ''
+        tok.append((i, a))
         d.append(txt[:l+1])
         txt = txt[l+1:]
 
