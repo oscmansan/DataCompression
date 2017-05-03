@@ -39,7 +39,7 @@ def LZ77_decode(tok):
     return txt
 
 
-def LZSS_encode(txt,s,t,m):
+def LZSS_encode(txt, s, t, m):
     tok = []
     i = 0
     while i < len(txt):
@@ -47,7 +47,7 @@ def LZSS_encode(txt,s,t,m):
         u = min(len(txt), i + t)
 
         th = 0
-        for j in reversed(range(i, u+1)):
+        for j in reversed(range(i, u + 1)):
             k = r + txt[r:u].find(txt[i:j])
             if j > i and k in range(r, i):
                 th = i - k
@@ -79,7 +79,7 @@ def LZSS_decode(tok):
 
 
 def LZ78_encode(txt):
-    tok =  []
+    tok = []
     d = ['']
 
     while txt:
@@ -92,8 +92,8 @@ def LZ78_encode(txt):
                 i = j
         a = txt[l] if l < len(txt) else ''
         tok.append((i, a))
-        d.append(txt[:l+1])
-        txt = txt[l+1:]
+        d.append(txt[:l + 1])
+        txt = txt[l + 1:]
 
     return tok
 
@@ -110,16 +110,75 @@ def LZ78_decode(tok):
     return txt
 
 
+def LZW_encode(txt, alp):
+    tok = []
+    d = alp
+
+    while txt:
+        l = 0
+        i = 0
+        for j in range(len(d)):
+            w = d[j]
+            if txt.startswith(w) and len(w) > l:
+                l = len(w)
+                i = j
+        tok.append(i)
+        d.append(txt[:l + 1])
+        txt = txt[l:]
+
+    return tok
+
+
+def LZW_decode(tok, alp):
+    txt = ''
+    d = alp
+
+    for i, t in enumerate(tok):
+        if i > 0:
+            d[-1] += d[t][0]
+        w = d[t]
+        txt += w
+        d.append(w)
+
+    return txt
+
+
+'''
+LZ77_tok = LZ77_encode(x, 4095, 16)
+LZ77_dec = LZ77_decode(LZ77_tok)
+assert (x == LZ77_dec)
+
+LZSS_tok = LZSS_encode(x, 4095, 16, 3)
+LZSS_dec = LZSS_decode(LZSS_tok)
+assert (x == LZSS_dec)
+
+LZ78_tok = LZ78_encode(x)
+LZ78_dec = LZ78_decode(LZ78_tok)
+assert (x == LZ78_dec)
+
+alp = list(set(x))
+LZW_tok = LZW_encode(x, alp)
+LZW_dec = LZW_decode(LZW_tok, alp)
+assert (x == LZW_dec)
+
+print('LZ77: \t{}'.format(len(LZ77_tok)))
+print('LZSS: \t{}'.format(len(LZSS_tok)))
+print('LZ78: \t{}'.format(len(LZ78_tok)))
+print('LZW: \t{}'.format(len(LZW_tok)))
+'''
+
 txt = open('../data/don_quijote.txt', 'r').read()
 l = 1000
 for _ in range(1000):
     i = min(randrange(len(txt)), len(txt) - l)
     str = txt[i:i + l]
 
-    tok = LZ78_encode(str)
+    alp = list(set(str))
+
+    tok = LZW_encode(str, alp)
     print(tok)
 
-    dec = LZ78_decode(tok)
+    dec = LZW_decode(tok, alp)
     print(dec)
 
     assert (dec == str)
