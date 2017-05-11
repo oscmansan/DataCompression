@@ -3,7 +3,7 @@ from itertools import product
 from math import sqrt, cos, pi
 
 import numpy as np
-from matplotlib.pyplot import figure, imshow, show
+from matplotlib.pyplot import figure, imshow, show, cm
 from scipy.misc import imread
 
 Q_JPEG_standard = np.array([
@@ -56,16 +56,16 @@ def lossy_transform(img, T, Q):
 T = T_DCT_matrix(8)
 Q = Q_JPEG_standard
 
-img = imread('../data/lena_512.tiff')
+img = imread('../data/lena_512.tiff', mode='L')
 newimg = lossy_transform(img, T, Q)
-imgerr = np.abs(img-newimg)
+imgerr = np.abs(img.astype(np.int8) - newimg.squeeze().astype(np.int8)).astype(np.uint8)
 
-figure()
-imshow(img.squeeze())
-figure()
-imshow(newimg.squeeze())
-figure()
-imshow(imgerr.squeeze())
+figure('original')
+imshow(img.squeeze(), cmap=cm.gray)
+figure('compressed')
+imshow(newimg.squeeze(), cmap=cm.gray)
+figure('error')
+imshow(imgerr.squeeze(), cmap=cm.gray)
 show()
 
 '''B = np.array([[142,144,130,92,84,77,72,85],
@@ -78,4 +78,3 @@ show()
               [145,148,151,152,151,154,148,157]])
 Benc = encode(B,T,Q)
 Bdec = decode(Benc,T,Q)'''
-
