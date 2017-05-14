@@ -17,7 +17,7 @@ Q_JPEG_standard = np.array([
     [72, 92, 95, 98, 112, 100, 103, 99]])
 
 
-def T_DCT_matrix(N):
+def T_DCT_matrix(N=8):
     mat = np.zeros((N, N))
     for j in range(N):
         mat[0, j] = sqrt(1 / N)
@@ -28,44 +28,47 @@ def T_DCT_matrix(N):
 
 def encode(X, T, Q):
     Y = T.dot(X).dot(np.transpose(T))
-    return np.rint(np.divide(Y, Q))
+    return np.rint(Y / Q)
 
 
 def decode(Y, T, Q):
-    X = np.multiply(Y, Q)
+    X = Y * Q
     return np.rint(np.linalg.inv(T).dot(X).dot(np.linalg.inv(np.transpose(T))))
 
 
 def lossy_transform(img, T, Q):
+    # TODO: refactor to accept variable N
     img = np.atleast_3d(img)
     height, width, depth = img.shape
     newimg = np.empty((height, width, depth), dtype=np.uint8)
 
     # split into 8 x 8 pixels blocks
+    # TODO: add extra rows or columns if dimensions not multiple of 8
     img_blocks = [(i, j) for (i, j) in product(range(0, height, 8), range(0, width, 8))]
     for i, j in img_blocks:
         for k in range(depth):
             B = img[i:i + 8, j:j + 8, k]
             Benc = encode(B, T, Q)
             Bdec = decode(Benc, T, Q)
+            Bdec = np.clip(Bdec, np.iinfo(np.uint8).min, np.iinfo(np.uint8).max)
             newimg[i:i + 8, j:j + 8, k] = Bdec
 
-    return newimg
+    return newimg.squeeze()
 
 
-T = T_DCT_matrix(8)
+T = T_DCT_matrix()
 Q = Q_JPEG_standard
 
-img = imread('../data/lena_512.tiff', mode='L')
+img = imread('../data/lena_512.tiff')
 newimg = lossy_transform(img, T, Q)
-imgerr = np.abs(img.astype(np.int8) - newimg.squeeze().astype(np.int8)).astype(np.uint8)
+imgerr = np.abs(img.astype(np.int8) - newimg.astype(np.int8)).astype(np.uint8)
 
 figure('original')
-imshow(img.squeeze(), cmap=cm.gray)
+imshow(img)
 figure('compressed')
-imshow(newimg.squeeze(), cmap=cm.gray)
+imshow(newimg)
 figure('error')
-imshow(imgerr.squeeze(), cmap=cm.gray)
+imshow(imgerr)
 show()
 
 '''B = np.array([[142,144,130,92,84,77,72,85],
