@@ -43,15 +43,19 @@ def lossy_transform(img, T, Q):
     newimg = np.empty((height, width, depth), dtype=np.uint8)
 
     # split into 8 x 8 pixels blocks
-    # TODO: add extra rows or columns if dimensions not multiple of 8
     img_blocks = [(i, j) for (i, j) in product(range(0, height, 8), range(0, width, 8))]
     for i, j in img_blocks:
         for k in range(depth):
             B = img[i:i + 8, j:j + 8, k]
+            shape = B.shape
+            if shape != (8, 8):
+                aux = np.zeros((8, 8))
+                aux[:B.shape[0], :B.shape[1]] = B
+                B = aux
             Benc = encode(B, T, Q)
             Bdec = decode(Benc, T, Q)
             Bdec = np.clip(Bdec, np.iinfo(np.uint8).min, np.iinfo(np.uint8).max)
-            newimg[i:i + 8, j:j + 8, k] = Bdec
+            newimg[i:i + 8, j:j + 8, k] = Bdec[:shape[0], :shape[1]]
 
     return newimg.squeeze()
 
@@ -59,7 +63,7 @@ def lossy_transform(img, T, Q):
 T = T_DCT_matrix()
 Q = Q_JPEG_standard
 
-img = imread('../data/lena_512.tiff')
+img = imread('../data/ILSVRC2012_val_00014184.JPEG')
 newimg = lossy_transform(img, T, Q)
 imgerr = np.abs(img.astype(np.int8) - newimg.astype(np.int8)).astype(np.uint8)
 
