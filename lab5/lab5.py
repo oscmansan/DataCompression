@@ -3,7 +3,7 @@ from itertools import product
 from math import sqrt, cos, pi
 
 import numpy as np
-from matplotlib.pyplot import figure, imshow, show, cm
+from matplotlib.pyplot import figure, imshow, show
 from scipy.misc import imread
 
 Q_JPEG_standard = np.array([
@@ -37,25 +37,25 @@ def decode(Y, T, Q):
 
 
 def lossy_transform(img, T, Q):
-    # TODO: refactor to accept variable N
+    N = T.shape[0]  # assuming T and Q are both NxN matrices
     img = np.atleast_3d(img)
     height, width, depth = img.shape
-    newimg = np.empty((height, width, depth), dtype=np.uint8)
+    newimg = np.empty((height, width, depth))
 
-    # split into 8 x 8 pixels blocks
-    img_blocks = [(i, j) for (i, j) in product(range(0, height, 8), range(0, width, 8))]
+    # split into N x N pixels blocks
+    img_blocks = [(i, j) for (i, j) in product(range(0, height, N), range(0, width, N))]
     for i, j in img_blocks:
         for k in range(depth):
-            B = img[i:i + 8, j:j + 8, k]
+            B = img[i:i + N, j:j + N, k]
             shape = B.shape
-            if shape != (8, 8):
-                aux = np.zeros((8, 8))
-                aux[:B.shape[0], :B.shape[1]] = B
-                B = aux
+            if shape != (N, N):
+                pady = N - shape[0]
+                padx = N - shape[1]
+                B = np.lib.pad(B, ((0, pady), (0, padx)), 'edge')
             Benc = encode(B, T, Q)
             Bdec = decode(Benc, T, Q)
             Bdec = np.clip(Bdec, np.iinfo(np.uint8).min, np.iinfo(np.uint8).max)
-            newimg[i:i + 8, j:j + 8, k] = Bdec[:shape[0], :shape[1]]
+            newimg[i:i + N, j:j + N, k] = Bdec[:shape[0], :shape[1]]
 
     return newimg.squeeze()
 
@@ -63,16 +63,16 @@ def lossy_transform(img, T, Q):
 T = T_DCT_matrix()
 Q = Q_JPEG_standard
 
-img = imread('../data/ILSVRC2012_val_00014184.JPEG')
+img = imread('../data/lena_512.tiff', mode='L')
 newimg = lossy_transform(img, T, Q)
-imgerr = np.abs(img.astype(np.int8) - newimg.astype(np.int8)).astype(np.uint8)
+imgerr = np.abs(img - newimg)
 
 figure('original')
-imshow(img)
-figure('compressed')
-imshow(newimg)
+imshow(img.astype(np.uint8))
+figure('decompressed')
+imshow(newimg.astype(np.uint8))
 figure('error')
-imshow(imgerr)
+imshow(imgerr.astype(np.uint8))
 show()
 
 '''B = np.array([[142,144,130,92,84,77,72,85],
